@@ -1,0 +1,6 @@
+{
+  "name": "pytech — Consultoría y Desarrollo Tecnológico",
+  "description": "Estudio de consultoría tecnológica fundado por Gerson Flores y Daniela Rojas. Páginas web, sistemas web a medida y aplicaciones móviles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
