@@ -7,7 +7,6 @@ import {
   TrainText,
   VIEWPORT_CONFIG,
 } from './MotionPrimitives';
-import { ResilientImage } from './ResilientImage';
 
 export function FoundersSection() {
   return (
@@ -51,24 +50,14 @@ export function FoundersSection() {
               className="p-7 lg:p-8 rounded-2xl border border-zinc-200 bg-[#FAFAFA] flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center gap-5 mb-6">
-                  <div className="w-24 h-24 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 shrink-0">
-                    <ResilientImage
-                      src={founder.imageUrl}
-                      alt={founder.imageAlt}
-                      fallbackTitle={founder.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="font-display text-xl lg:text-2xl font-bold tracking-tight text-zinc-950">
-                      {founder.name}
-                    </h3>
-                    <p className="text-sm font-medium text-[#2563EB] mt-0.5">
-                      {founder.role}
-                    </p>
-                    <p className="text-xs text-zinc-500 mt-1">{founder.specialty}</p>
-                  </div>
+                <div className="mb-6">
+                  <h3 className="font-display text-xl lg:text-2xl font-bold tracking-tight text-zinc-950">
+                    {founder.name}
+                  </h3>
+                  <p className="text-sm font-medium text-[#2563EB] mt-0.5">
+                    {founder.role}
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-1">{founder.specialty}</p>
                 </div>
 
                 <p className="text-sm lg:text-base text-zinc-600 leading-relaxed mb-6">
