@@ -1,18 +1,32 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowRight, Check, Copy, Mail, MapPin } from 'lucide-react';
+import {
+  ArrowRight,
+  Check,
+  Copy,
+  Mail,
+  MapPin,
+  MessageCircle,
+} from 'lucide-react';
 import { motion } from 'motion/react';
 import {
-  BUDGET_OPTIONS,
   CONTACT_INFO,
   SERVICES,
+  WHATSAPP_CONTACTS,
 } from '../data/consultancyData';
 import {
+  buildWhatsAppInquiryUrl,
   estimateProjectScope,
   validateContactForm,
   type ContactFormErrors,
   type ContactFormInput,
   type ServiceId,
 } from '../utils/inquiryLogic';
+import {
+  EASE_OUT_EXPO,
+  RevealBlock,
+  TrainText,
+  VIEWPORT_CONFIG,
+} from './MotionPrimitives';
 
 interface ContactSectionProps {
   selectedService: ServiceId;
@@ -24,15 +38,21 @@ export function ContactSection({
   onServiceChange,
 }: ContactSectionProps) {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [budget, setBudget] = useState(BUDGET_OPTIONS[1]);
+  const [countryCode, setCountryCode] = useState('+591');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [message, setMessage] = useState('');
+  const [selectedWaId, setSelectedWaId] = useState(WHATSAPP_CONTACTS[0].id);
   const [errors, setErrors] = useState<ContactFormErrors>({});
   const [submittedInquiry, setSubmittedInquiry] =
     useState<ContactFormInput | null>(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
-  const scopeEstimate = estimateProjectScope(selectedService, budget);
+  const scopeEstimate = estimateProjectScope(selectedService);
+  const selectedServiceTitle =
+    SERVICES.find((s) => s.id === selectedService)?.title ?? selectedService;
+  const activeWhatsApp =
+    WHATSAPP_CONTACTS.find((contact) => contact.id === selectedWaId) ??
+    WHATSAPP_CONTACTS[0];
 
   const handleCopyEmail = async () => {
     try {
@@ -46,11 +66,11 @@ export function ContactSection({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const formattedPhone = `${countryCode.trim()} ${phoneNumber.trim()}`.trim();
     const payload: ContactFormInput = {
       name,
-      email,
+      phone: formattedPhone,
       service: selectedService,
-      budget,
       message,
     };
 
@@ -62,11 +82,19 @@ export function ContactSection({
 
     setErrors({});
     setSubmittedInquiry(payload);
+
+    const whatsappUrl = buildWhatsAppInquiryUrl(
+      activeWhatsApp.waNumber,
+      payload,
+      selectedServiceTitle
+    );
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleReset = () => {
     setName('');
-    setEmail('');
+    setCountryCode('+591');
+    setPhoneNumber('');
     setMessage('');
     setErrors({});
     setSubmittedInquiry(null);
@@ -79,100 +107,142 @@ export function ContactSection({
           {/* Left column: Direct contact + Live Scope Estimator */}
           <div className="lg:col-span-5 space-y-8">
             <div>
-              <p className="text-sm font-medium text-[#2563EB] mb-3">
-                Contacto directo
-              </p>
-              <h2
+              <RevealBlock y={10}>
+                <p className="text-sm font-medium text-[#2563EB] mb-3">
+                  Contacto directo
+                </p>
+              </RevealBlock>
+              <TrainText
+                as="h2"
+                text="Cuéntanos qué necesitas construir."
+                delay={0.08}
+                stagger={0.055}
+                duration={0.5}
                 className="font-display text-3xl lg:text-4xl font-bold tracking-tight text-zinc-950 mb-4"
                 style={{ textWrap: 'balance' }}
-              >
-                Cuéntanos qué necesitas construir.
-              </h2>
-              <p className="text-sm lg:text-base text-zinc-600 leading-relaxed">
-                Agenda una conversación técnica con Gerson Flores y Daniela Rojas. Analizamos tu
-                idea y te enviamos una propuesta clara con alcance, tiempos e inversión.
-              </p>
+              />
+              <RevealBlock delay={0.26} y={12}>
+                <p className="text-sm lg:text-base text-zinc-600 leading-relaxed">
+                  Agenda una conversación técnica con Gerson Flores y Daniela Rojas. Analizamos tu
+                  idea y te enviamos una propuesta clara con alcance y tiempos de entrega.
+                </p>
+              </RevealBlock>
             </div>
 
             {/* Live Scope Estimator Summary */}
-            <div className="p-6 rounded-2xl border border-zinc-200 bg-white space-y-4">
-              <div className="flex items-baseline justify-between gap-4 pb-3 border-b border-zinc-100">
-                <span className="text-xs font-semibold text-zinc-500">
-                  Estimación referencial
-                </span>
-                <span className="font-mono-nums text-sm font-semibold text-[#2563EB]">
-                  {scopeEstimate.estimatedWeeks}
-                </span>
-              </div>
+            <RevealBlock delay={0.32} y={18}>
+              <div className="p-6 rounded-2xl border border-zinc-200 bg-white space-y-4">
+                <div className="flex items-baseline justify-between gap-4 pb-3 border-b border-zinc-100">
+                  <span className="text-xs font-semibold text-zinc-500">
+                    Estimación referencial
+                  </span>
+                  <span className="font-mono-nums text-sm font-semibold text-[#2563EB]">
+                    {scopeEstimate.estimatedWeeks}
+                  </span>
+                </div>
 
-              <div>
-                <p className="text-sm font-semibold text-zinc-950 mb-2">
-                  {scopeEstimate.label}
+                <div>
+                  <p className="text-sm font-semibold text-zinc-950 mb-2">
+                    {scopeEstimate.label}
+                  </p>
+                  <ul className="space-y-2">
+                    {scopeEstimate.deliverables.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-2 text-xs text-zinc-600"
+                      >
+                        <Check
+                          className="w-3.5 h-3.5 text-[#2563EB] shrink-0 mt-0.5"
+                          strokeWidth={2}
+                        />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <p className="pt-3 border-t border-zinc-100 text-xs text-zinc-500 leading-relaxed">
+                  Plazo referencial: podemos adaptar y acelerar la entrega —incluso en días— según
+                  el alcance y los tiempos que necesites.
                 </p>
-                <ul className="space-y-2">
-                  {scopeEstimate.deliverables.map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2 text-xs text-zinc-600"
-                    >
-                      <Check
-                        className="w-3.5 h-3.5 text-[#2563EB] shrink-0 mt-0.5"
-                        strokeWidth={2}
-                      />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
-            </div>
+            </RevealBlock>
 
             {/* Direct Channels */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-zinc-200 bg-white">
-                <div className="flex items-center gap-3 min-w-0">
-                  <Mail className="w-4 h-4 text-zinc-500 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs text-zinc-500">Correo directo</p>
-                    <a
-                      href={`mailto:${CONTACT_INFO.email}`}
-                      className="text-sm font-medium text-zinc-950 hover:text-[#2563EB] transition-colors truncate block"
-                    >
-                      {CONTACT_INFO.email}
-                    </a>
+            <RevealBlock delay={0.4} y={16}>
+              <div className="space-y-3 pt-2">
+                <div className="p-4 rounded-xl border border-zinc-200 bg-white space-y-2.5">
+                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+                    <MessageCircle className="w-4 h-4 text-[#2563EB] shrink-0" />
+                    <span>WhatsApp directo</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {WHATSAPP_CONTACTS.map((contact) => (
+                      <a
+                        key={contact.id}
+                        href={`https://wa.me/${contact.waNumber}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-900 bg-zinc-100 hover:bg-zinc-950 hover:text-white rounded-lg transition-colors font-mono-nums"
+                      >
+                        {contact.displayPhone}
+                      </a>
+                    ))}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleCopyEmail}
-                  aria-label="Copiar correo electrónico"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:text-zinc-950 bg-zinc-100 hover:bg-zinc-200/80 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
-                >
-                  {copiedEmail ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-[#2563EB]" />
-                      Copiado
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      Copiar
-                    </>
-                  )}
-                </button>
-              </div>
 
-              <div className="flex items-start gap-3 px-1 text-xs text-zinc-500">
-                <MapPin className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-zinc-700">{CONTACT_INFO.location}</p>
-                  <p className="mt-0.5">{CONTACT_INFO.hours}</p>
+                <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-zinc-200 bg-white">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Mail className="w-4 h-4 text-zinc-500 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs text-zinc-500">Correo directo</p>
+                      <a
+                        href={`mailto:${CONTACT_INFO.email}`}
+                        className="text-sm font-medium text-zinc-950 hover:text-[#2563EB] transition-colors truncate block"
+                      >
+                        {CONTACT_INFO.email}
+                      </a>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyEmail}
+                    aria-label="Copiar correo electrónico"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:text-zinc-950 bg-zinc-100 hover:bg-zinc-200/80 rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+                  >
+                    {copiedEmail ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-[#2563EB]" />
+                        Copiado
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        Copiar
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex items-start gap-3 px-1 pt-1 text-xs text-zinc-500">
+                  <MapPin className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-zinc-700">{CONTACT_INFO.location}</p>
+                    <p className="mt-0.5">{CONTACT_INFO.hours}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </RevealBlock>
           </div>
 
-          {/* Right column: Validated Lead Capture Form */}
-          <div className="lg:col-span-7">
+          {/* Right column: Validated Lead Capture Form -> WhatsApp */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={VIEWPORT_CONFIG}
+            transition={{ duration: 0.55, delay: 0.16, ease: EASE_OUT_EXPO }}
+            className="lg:col-span-7"
+          >
             <div className="p-7 sm:p-9 rounded-2xl border border-zinc-200 bg-white">
               {submittedInquiry ? (
                 <motion.div
@@ -189,40 +259,76 @@ export function ContactSection({
 
                   <div>
                     <h3 className="font-display text-2xl font-bold text-zinc-950 mb-2">
-                      Solicitud recibida correctamente
+                      Consulta lista para enviar por WhatsApp
                     </h3>
                     <p className="text-sm text-zinc-600 leading-relaxed">
                       Gracias, <span className="font-semibold text-zinc-900">{submittedInquiry.name}</span>.
-                      Gerson Flores y Daniela Rojas revisarán tu propuesta y te responderán a{' '}
-                      <span className="font-semibold text-zinc-900">{submittedInquiry.email}</span>{' '}
-                      en menos de 24 horas hábiles.
+                      Abrimos WhatsApp con tu mensaje para que lo envíes directamente a nuestro equipo.
+                      Te responderemos al{' '}
+                      <span className="font-semibold font-mono-nums text-zinc-900">
+                        {submittedInquiry.phone}
+                      </span>{' '}
+                      en menos de 4 horas hábiles.
                     </p>
                   </div>
 
                   <div className="p-5 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-2 text-sm">
                     <p className="text-zinc-500 text-xs font-medium">
-                      Resumen enviado
+                      Resumen del mensaje
                     </p>
                     <p className="text-zinc-900">
-                      <span className="font-semibold">Solución:</span>{' '}
+                      <span className="font-semibold">Nombre:</span> {submittedInquiry.name}
+                    </p>
+                    <p className="text-zinc-900">
+                      <span className="font-semibold">Celular:</span>{' '}
+                      <span className="font-mono-nums">{submittedInquiry.phone}</span>
+                    </p>
+                    <p className="text-zinc-900">
+                      <span className="font-semibold">Tipo de proyecto:</span>{' '}
                       {SERVICES.find((s) => s.id === submittedInquiry.service)?.title}
                     </p>
-                    <p className="text-zinc-900">
-                      <span className="font-semibold">Inversión estimada:</span>{' '}
-                      <span className="font-mono-nums">{submittedInquiry.budget}</span>
-                    </p>
-                    <p className="text-zinc-700 pt-1 border-t border-zinc-200/70">
+                    <p className="text-zinc-700 pt-2 border-t border-zinc-200/70">
                       {submittedInquiry.message}
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-zinc-950 border border-zinc-300 hover:border-zinc-950 rounded-lg transition-colors cursor-pointer"
-                  >
-                    Enviar otra consulta
-                  </button>
+                  <div className="space-y-3">
+                    <p className="text-xs font-medium text-zinc-500">
+                      Si no se abrió WhatsApp automáticamente, elige un número para enviarlo ahora:
+                    </p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      {WHATSAPP_CONTACTS.map((contact) => {
+                        const serviceLabel =
+                          SERVICES.find((s) => s.id === submittedInquiry.service)?.title ??
+                          submittedInquiry.service;
+                        const href = buildWhatsAppInquiryUrl(
+                          contact.waNumber,
+                          submittedInquiry,
+                          serviceLabel
+                        );
+                        return (
+                          <a
+                            key={contact.id}
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-zinc-950 hover:bg-[#2563EB] rounded-lg transition-colors whitespace-nowrap"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span className="font-mono-nums">{contact.displayPhone}</span>
+                          </a>
+                        );
+                      })}
+
+                      <button
+                        type="button"
+                        onClick={handleReset}
+                        className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-zinc-950 border border-zinc-300 hover:border-zinc-950 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Enviar otra consulta
+                      </button>
+                    </div>
+                  </div>
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} noValidate className="space-y-5">
@@ -259,30 +365,48 @@ export function ContactSection({
 
                     <div>
                       <label
-                        htmlFor="contact-email"
+                        htmlFor="contact-phone"
                         className="block text-sm font-medium text-zinc-900 mb-1.5"
                       >
-                        Correo electrónico
+                        Celular (WhatsApp)
                       </label>
-                      <input
-                        id="contact-email"
-                        name="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
-                        }}
-                        placeholder="nombre@empresa.com"
-                        aria-invalid={Boolean(errors.email)}
-                        aria-describedby={errors.email ? 'contact-email-error' : undefined}
-                        className={`w-full px-3.5 py-2.5 text-sm rounded-lg border bg-white text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] ${
-                          errors.email ? 'border-red-600' : 'border-zinc-300'
+                      <div
+                        className={`flex items-stretch rounded-lg border bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#2563EB] ${
+                          errors.phone ? 'border-red-600' : 'border-zinc-300'
                         }`}
-                      />
-                      {errors.email && (
-                        <p id="contact-email-error" className="mt-1.5 text-xs text-red-600 font-medium">
-                          {errors.email}
+                      >
+                        <input
+                          id="contact-country-code"
+                          name="countryCode"
+                          type="text"
+                          aria-label="Código de país"
+                          value={countryCode}
+                          onChange={(e) => {
+                            setCountryCode(e.target.value);
+                            if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+                          }}
+                          className="w-16 shrink-0 px-2.5 py-2.5 text-sm font-mono-nums font-medium text-zinc-700 bg-zinc-50 border-r border-zinc-200 text-center focus:outline-none"
+                        />
+                        <input
+                          id="contact-phone"
+                          name="phone"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel-national"
+                          value={phoneNumber}
+                          onChange={(e) => {
+                            setPhoneNumber(e.target.value);
+                            if (errors.phone) setErrors((prev) => ({ ...prev, phone: undefined }));
+                          }}
+                          placeholder="71234567"
+                          aria-invalid={Boolean(errors.phone)}
+                          aria-describedby={errors.phone ? 'contact-phone-error' : undefined}
+                          className="w-full min-w-0 px-3.5 py-2.5 text-sm font-mono-nums bg-white text-zinc-950 placeholder:text-zinc-400 focus:outline-none"
+                        />
+                      </div>
+                      {errors.phone && (
+                        <p id="contact-phone-error" className="mt-1.5 text-xs text-red-600 font-medium">
+                          {errors.phone}
                         </p>
                       )}
                     </div>
@@ -312,25 +436,33 @@ export function ContactSection({
                     </div>
 
                     <div>
-                      <label
-                        htmlFor="contact-budget"
-                        className="block text-sm font-medium text-zinc-900 mb-1.5"
+                      <span className="block text-sm font-medium text-zinc-900 mb-1.5">
+                        Enviar mensaje al WhatsApp
+                      </span>
+                      <div
+                        role="group"
+                        aria-label="Seleccionar número de WhatsApp destino"
+                        className="grid grid-cols-2 gap-2"
                       >
-                        Inversión estimada
-                      </label>
-                      <select
-                        id="contact-budget"
-                        name="budget"
-                        value={budget}
-                        onChange={(e) => setBudget(e.target.value)}
-                        className="w-full px-3.5 py-2.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-950 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                      >
-                        {BUDGET_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
+                        {WHATSAPP_CONTACTS.map((contact) => {
+                          const isSelected = selectedWaId === contact.id;
+                          return (
+                            <button
+                              key={contact.id}
+                              type="button"
+                              aria-pressed={isSelected}
+                              onClick={() => setSelectedWaId(contact.id)}
+                              className={`px-2.5 py-2.5 text-xs font-mono-nums font-medium rounded-lg border transition-colors cursor-pointer whitespace-nowrap truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
+                                isSelected
+                                  ? 'border-zinc-950 bg-zinc-950 text-white'
+                                  : 'border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400'
+                              }`}
+                            >
+                              {contact.displayPhone}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
@@ -366,20 +498,20 @@ export function ContactSection({
 
                   <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <p className="text-xs text-zinc-500">
-                      Respuesta garantizada en menos de 24 horas hábiles.
+                      Respuesta garantizada en menos de 4 horas hábiles.
                     </p>
                     <button
                       type="submit"
                       className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-zinc-950 hover:bg-[#2563EB] rounded-lg transition-colors duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] focus-visible:ring-offset-2"
                     >
-                      Enviar solicitud
+                      Enviar por WhatsApp
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 </form>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

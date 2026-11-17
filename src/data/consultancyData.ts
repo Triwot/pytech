@@ -20,7 +20,7 @@ export interface MetricItem {
 
 export const KEY_METRICS: MetricItem[] = [
   {
-    value: '+42',
+    value: '+22',
     label: 'Productos lanzados',
     detail: 'Web, sistemas ERP y apps móviles en producción',
   },
@@ -30,12 +30,12 @@ export const KEY_METRICS: MetricItem[] = [
     detail: 'Empresas que escalan sus plataformas con nosotros',
   },
   {
-    value: '6+ años',
+    value: '2+ años',
     label: 'Experiencia combinada',
     detail: 'Arquitectura de software, producto y diseño',
   },
   {
-    value: '< 24 h',
+    value: '< 12 h',
     label: 'Respuesta técnica',
     detail: 'Diagnóstico directo con los fundadores',
   },
@@ -213,12 +213,23 @@ export const CLIENT_TESTIMONIAL = {
   role: 'Director de Operaciones, Grupo TransAndes',
 };
 
-export const BUDGET_OPTIONS = [
-  '$1,500 – $4,000 USD',
-  '$4,000 – $8,000 USD',
-  '$8,000 – $15,000 USD',
-  '$15,000+ USD',
-  'Por definir en consultoría',
+export interface WhatsAppContact {
+  id: string;
+  displayPhone: string;
+  waNumber: string;
+}
+
+export const WHATSAPP_CONTACTS: WhatsAppContact[] = [
+  {
+    id: 'wa-primary',
+    displayPhone: '+591 60107969',
+    waNumber: '59160107969',
+  },
+  {
+    id: 'wa-secondary',
+    displayPhone: '+591 68120045',
+    waNumber: '59168120045',
+  },
 ];
 
 export const CONTACT_INFO = {

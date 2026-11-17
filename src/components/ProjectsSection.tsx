@@ -7,6 +7,12 @@ import {
   type ProjectCategory,
   type ProjectSummary,
 } from '../utils/inquiryLogic';
+import {
+  EASE_OUT_EXPO,
+  RevealBlock,
+  TrainText,
+  VIEWPORT_CONFIG,
+} from './MotionPrimitives';
 import { ResilientImage } from './ResilientImage';
 
 interface ProjectsSectionProps {
@@ -20,8 +26,6 @@ const CATEGORIES: ProjectCategory[] = [
   'Web Corporativa',
 ];
 
-const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
-
 export function ProjectsSection({ onOpenProject }: ProjectsSectionProps) {
   const [activeCategory, setActiveCategory] = useState<ProjectCategory>('Todos');
   const filteredProjects = filterProjectsByCategory(PROJECTS, activeCategory);
@@ -31,42 +35,49 @@ export function ProjectsSection({ onOpenProject }: ProjectsSectionProps) {
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
           <div className="max-w-xl">
-            <p className="text-sm font-medium text-[#2563EB] mb-3">
-              Casos de éxito
-            </p>
-            <h2
+            <RevealBlock y={10}>
+              <p className="text-sm font-medium text-[#2563EB] mb-3">
+                Casos de éxito
+              </p>
+            </RevealBlock>
+            <TrainText
+              as="h2"
+              text="Proyectos construidos con impacto medible."
+              delay={0.08}
+              stagger={0.055}
+              duration={0.5}
               className="font-display text-3xl lg:text-4xl font-bold tracking-tight text-zinc-950"
               style={{ textWrap: 'balance' }}
-            >
-              Proyectos construidos con impacto medible.
-            </h2>
+            />
           </div>
 
           {/* Interactive category filter control */}
-          <div
-            role="group"
-            aria-label="Filtrar proyectos por categoría"
-            className="inline-flex flex-wrap items-center gap-1 p-1 bg-zinc-200/70 rounded-xl self-start lg:self-auto"
-          >
-            {CATEGORIES.map((category) => {
-              const active = activeCategory === category;
-              return (
-                <button
-                  key={category}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setActiveCategory(category)}
-                  className={`px-3.5 py-2 text-xs font-medium rounded-lg transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
-                    active
-                      ? 'bg-white text-zinc-950 shadow-sm'
-                      : 'text-zinc-600 hover:text-zinc-950'
-                  }`}
-                >
-                  {category}
-                </button>
-              );
-            })}
-          </div>
+          <RevealBlock delay={0.22} y={10} className="self-start lg:self-auto">
+            <div
+              role="group"
+              aria-label="Filtrar proyectos por categoría"
+              className="inline-flex flex-wrap items-center gap-1 p-1 bg-zinc-200/70 rounded-xl"
+            >
+              {CATEGORIES.map((category) => {
+                const active = activeCategory === category;
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setActiveCategory(category)}
+                    className={`px-3.5 py-2 text-xs font-medium rounded-lg transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] ${
+                      active
+                        ? 'bg-white text-zinc-950 shadow-sm'
+                        : 'text-zinc-600 hover:text-zinc-950'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                );
+              })}
+            </div>
+          </RevealBlock>
         </div>
 
         {/* Project Grid */}
@@ -81,9 +92,10 @@ export function ProjectsSection({ onOpenProject }: ProjectsSectionProps) {
             {filteredProjects.map((project, index) => (
               <motion.article
                 key={`${activeCategory}-${project.id}`}
-                initial={{ opacity: 0.7, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.16, delay: index * 0.03, ease: EASE_OUT_EXPO }}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={VIEWPORT_CONFIG}
+                transition={{ duration: 0.5, delay: index * 0.1, ease: EASE_OUT_EXPO }}
                 className="group flex flex-col justify-between bg-white border border-zinc-200/90 rounded-2xl overflow-hidden hover:border-zinc-300 transition-colors duration-150"
               >
                   <div>

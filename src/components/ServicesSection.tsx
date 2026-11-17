@@ -2,13 +2,17 @@ import { ArrowRight, Check } from 'lucide-react';
 import { motion } from 'motion/react';
 import { SERVICES, type ServiceItem } from '../data/consultancyData';
 import type { ServiceId } from '../utils/inquiryLogic';
+import {
+  EASE_OUT_EXPO,
+  RevealBlock,
+  TrainText,
+  VIEWPORT_CONFIG,
+} from './MotionPrimitives';
 
 interface ServicesSectionProps {
   selectedService: ServiceId;
   onSelectServiceForQuote: (serviceId: ServiceId) => void;
 }
-
-const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
 export function ServicesSection({
   selectedService,
@@ -19,20 +23,27 @@ export function ServicesSection({
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
           <div className="max-w-2xl">
-            <p className="text-sm font-medium text-[#2563EB] mb-3">
-              Capacidades técnicas
-            </p>
-            <h2
+            <RevealBlock y={10}>
+              <p className="text-sm font-medium text-[#2563EB] mb-3">
+                Capacidades técnicas
+              </p>
+            </RevealBlock>
+            <TrainText
+              as="h2"
+              text="Desde páginas web veloces hasta sistemas empresariales y apps móviles."
+              delay={0.08}
+              stagger={0.05}
+              duration={0.5}
               className="font-display text-3xl lg:text-4xl font-bold tracking-tight text-zinc-950"
               style={{ textWrap: 'balance' }}
-            >
-              Desde páginas web veloces hasta sistemas empresariales y apps móviles.
-            </h2>
+            />
           </div>
-          <p className="text-sm lg:text-base text-zinc-600 max-w-md leading-relaxed">
-            No usamos plantillas genéricas. Cada arquitectura se diseña desde cero según los
-            objetivos operativos y de crecimiento de tu negocio.
-          </p>
+          <RevealBlock delay={0.28} y={12} className="max-w-md">
+            <p className="text-sm lg:text-base text-zinc-600 leading-relaxed">
+              No usamos plantillas genéricas. Cada arquitectura se diseña desde cero según los
+              objetivos operativos y de crecimiento de tu negocio.
+            </p>
+          </RevealBlock>
         </div>
 
         {/* Asymmetric Bento Grid (Row 1: 2+1, Row 2: 1+2) */}
@@ -45,10 +56,10 @@ export function ServicesSection({
             return (
               <motion.article
                 key={service.id}
-                initial={{ opacity: 1, y: 8 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.1 }}
-                transition={{ duration: 0.25, delay: index * 0.03, ease: EASE_OUT_EXPO }}
+                viewport={VIEWPORT_CONFIG}
+                transition={{ duration: 0.5, delay: 0.1 + index * 0.09, ease: EASE_OUT_EXPO }}
                 className={`${colSpanClass} flex flex-col justify-between p-7 lg:p-8 rounded-2xl border transition-colors duration-150 ${
                   isSelected
                     ? 'border-[#2563EB] bg-[#FAFAFA]'

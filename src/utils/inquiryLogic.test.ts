@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  buildWhatsAppInquiryUrl,
   estimateProjectScope,
   filterProjectsByCategory,
   validateContactForm,
@@ -67,39 +68,56 @@ test('filterProjectsByCategory filters accurately by category', () => {
   assert.equal(systems[0].id, 'p1');
 });
 
-test('estimateProjectScope scales timeline based on service and budget', () => {
-  const standardSystem = estimateProjectScope('sistema-web', '$4,000 – $8,000 USD');
-  const enterpriseSystem = estimateProjectScope('sistema-web', '$15,000+ USD');
-  assert.equal(standardSystem.estimatedWeeks, '6 – 10 semanas');
-  assert.equal(enterpriseSystem.estimatedWeeks, '8 – 14 semanas');
-  assert.equal(enterpriseSystem.deliverables.length, 3);
+test('estimateProjectScope returns expected timeline and deliverables by service', () => {
+  const standardSystem = estimateProjectScope('sistema-web');
+  const mobileApp = estimateProjectScope('app-movil');
+  assert.equal(standardSystem.estimatedWeeks, '2 – 3 semanas');
+  assert.equal(mobileApp.estimatedWeeks, '3 – 4 semanas');
+  assert.equal(standardSystem.deliverables.length, 3);
 });
 
 test('validateContactForm rejects empty or invalid inputs with clear field errors', () => {
   const invalid = validateContactForm({
     name: 'A',
-    email: 'correo-invalido',
+    phone: '+591 ',
     service: 'sistema-web',
-    budget: '',
     message: 'Hola',
   });
 
   assert.equal(invalid.valid, false);
   assert.ok(invalid.errors.name);
-  assert.ok(invalid.errors.email);
-  assert.ok(invalid.errors.budget);
+  assert.ok(invalid.errors.phone);
   assert.ok(invalid.errors.message);
 });
 
-test('validateContactForm accepts valid complete inquiry', () => {
+test('validateContactForm accepts valid complete inquiry with Bolivian phone number', () => {
   const valid = validateContactForm({
     name: 'Carlos Mendoza',
-    email: 'carlos@empresa.pe',
+    phone: '+591 71234567',
     service: 'app-movil',
-    budget: '$8,000 – $15,000 USD',
     message: 'Necesitamos desarrollar una aplicación móvil para pedidos B2B en tiempo real.',
   });
 
   assert.equal(valid.valid, true);
   assert.deepEqual(valid.errors, {});
+});
+
+test('buildWhatsAppInquiryUrl formats pre-filled WhatsApp message accurately', () => {
+  const url = buildWhatsAppInquiryUrl(
+    '59160107969',
+    {
+      name: 'Carlos Mendoza',
+      phone: '+591 71234567',
+      service: 'sistema-web',
+      message: 'Queremos un sistema ERP para 5 sucursales en La Paz.',
+    },
+    'Sistemas Web a Medida'
+  );
+
+  assert.ok(url.startsWith('https://wa.me/59160107969?text='));
+  const decoded = decodeURIComponent(url.split('?text=')[1]);
+  assert.ok(decoded.includes('Carlos Mendoza'));
+  assert.ok(decoded.includes('+591 71234567'));
+  assert.ok(decoded.includes('Sistemas Web a Medida'));
+  assert.ok(decoded.includes('Queremos un sistema ERP para 5 sucursales en La Paz.'));
 });

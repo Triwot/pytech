@@ -1,9 +1,13 @@
 import { Check, Quote } from 'lucide-react';
 import { motion } from 'motion/react';
 import { CLIENT_TESTIMONIAL, FOUNDERS } from '../data/consultancyData';
+import {
+  EASE_OUT_EXPO,
+  RevealBlock,
+  TrainText,
+  VIEWPORT_CONFIG,
+} from './MotionPrimitives';
 import { ResilientImage } from './ResilientImage';
-
-const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
 export function FoundersSection() {
   return (
@@ -11,21 +15,28 @@ export function FoundersSection() {
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-14 items-end">
           <div className="lg:col-span-7">
-            <p className="text-sm font-medium text-[#2563EB] mb-3">
-              Liderazgo técnico y de producto
-            </p>
-            <h2
+            <RevealBlock y={10}>
+              <p className="text-sm font-medium text-[#2563EB] mb-3">
+                Liderazgo técnico y de producto
+              </p>
+            </RevealBlock>
+            <TrainText
+              as="h2"
+              text="Dos fundadores involucrados directamente en cada línea de código."
+              delay={0.08}
+              stagger={0.055}
+              duration={0.5}
               className="font-display text-3xl lg:text-4xl font-bold tracking-tight text-zinc-950"
               style={{ textWrap: 'balance' }}
-            >
-              Dos fundadores involucrados directamente en cada línea de código.
-            </h2>
+            />
           </div>
-          <p className="lg:col-span-5 text-sm lg:text-base text-zinc-600 leading-relaxed">
-            En pytech trabajas directamente con quienes diseñan la arquitectura y programan tu
-            producto. Nuestra experiencia abarca proyectos personalizados para logística,
-            fintech, salud, comercio y servicios profesionales.
-          </p>
+          <RevealBlock delay={0.28} y={12} className="lg:col-span-5">
+            <p className="text-sm lg:text-base text-zinc-600 leading-relaxed">
+              En pytech trabajas directamente con quienes diseñan la arquitectura y programan tu
+              producto. Nuestra experiencia abarca proyectos personalizados para logística,
+              fintech, salud, comercio y servicios profesionales.
+            </p>
+          </RevealBlock>
         </div>
 
         {/* Founders 2-column profile grid */}
@@ -33,10 +44,10 @@ export function FoundersSection() {
           {FOUNDERS.map((founder, index) => (
             <motion.article
               key={founder.name}
-              initial={{ opacity: 1, y: 10 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.1 }}
-              transition={{ duration: 0.3, delay: index * 0.05, ease: EASE_OUT_EXPO }}
+              viewport={VIEWPORT_CONFIG}
+              transition={{ duration: 0.5, delay: 0.08 + index * 0.12, ease: EASE_OUT_EXPO }}
               className="p-7 lg:p-8 rounded-2xl border border-zinc-200 bg-[#FAFAFA] flex flex-col justify-between"
             >
               <div>
@@ -90,10 +101,10 @@ export function FoundersSection() {
 
         {/* Adjacent social proof testimonial (clean hairline container, no left thick border) */}
         <motion.div
-          initial={{ opacity: 1, y: 10 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.1 }}
-          transition={{ duration: 0.3, ease: EASE_OUT_EXPO }}
+          viewport={VIEWPORT_CONFIG}
+          transition={{ duration: 0.55, delay: 0.14, ease: EASE_OUT_EXPO }}
           className="p-7 lg:p-10 rounded-2xl border border-zinc-200 bg-zinc-950 text-white"
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">

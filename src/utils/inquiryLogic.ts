@@ -27,9 +27,8 @@ export interface ProjectSummary {
 
 export interface ContactFormInput {
   name: string;
-  email: string;
+  phone: string;
   service: ServiceId;
-  budget: string;
   message: string;
 }
 
@@ -51,18 +50,12 @@ export function filterProjectsByCategory(
   return projects.filter((project) => project.category === category);
 }
 
-export function estimateProjectScope(
-  service: ServiceId,
-  budget: string
-): ScopeEstimate {
-  const isEnterpriseBudget =
-    budget === '$15,000+ USD' || budget === '$8,000 – $15,000 USD';
-
+export function estimateProjectScope(service: ServiceId): ScopeEstimate {
   switch (service) {
     case 'web-corporativa':
       return {
         label: 'Web Corporativa & Conversión',
-        estimatedWeeks: isEnterpriseBudget ? '3 – 5 semanas' : '2 – 4 semanas',
+        estimatedWeeks: '1 – 2 semanas',
         deliverables: [
           'Diseño UI/UX editorial a medida',
           'Desarrollo rápido optimizado para SEO técnico',
@@ -72,7 +65,7 @@ export function estimateProjectScope(
     case 'sistema-web':
       return {
         label: 'Sistema Web / Plataforma SaaS',
-        estimatedWeeks: isEnterpriseBudget ? '8 – 14 semanas' : '6 – 10 semanas',
+        estimatedWeeks: '2 – 3 semanas',
         deliverables: [
           'Arquitectura de base de datos y roles de usuario',
           'Panel operativo en tiempo real y reportes',
@@ -82,7 +75,7 @@ export function estimateProjectScope(
     case 'app-movil':
       return {
         label: 'Aplicación Móvil iOS & Android',
-        estimatedWeeks: isEnterpriseBudget ? '10 – 16 semanas' : '8 – 12 semanas',
+        estimatedWeeks: '3 – 4 semanas',
         deliverables: [
           'Prototipo interactivo y experiencia táctil fluida',
           'App multiplataforma con sincronización offline',
@@ -92,7 +85,7 @@ export function estimateProjectScope(
     case 'arquitectura-cloud':
       return {
         label: 'APIs, Automatización & Cloud',
-        estimatedWeeks: isEnterpriseBudget ? '4 – 8 semanas' : '3 – 6 semanas',
+        estimatedWeeks: '2 – 3 semanas',
         deliverables: [
           'Integración de pasarelas de pago, ERP y CRM',
           'Microservicios escalables y observabilidad',
@@ -102,7 +95,7 @@ export function estimateProjectScope(
   }
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_FORMAT_REGEX = /^\+?[\d\s()-]{8,}$/;
 
 export function validateContactForm(
   input: ContactFormInput
@@ -114,19 +107,22 @@ export function validateContactForm(
     errors.name = 'Ingresa tu nombre completo (mínimo 2 caracteres).';
   }
 
-  const trimmedEmail = input.email.trim();
-  if (!trimmedEmail) {
-    errors.email = 'Ingresa un correo electrónico de contacto.';
-  } else if (!EMAIL_REGEX.test(trimmedEmail)) {
-    errors.email = 'El formato del correo electrónico no es válido.';
+  const trimmedPhone = input.phone.trim();
+  const digitsOnly = trimmedPhone.replace(/\D/g, '');
+  const localDigits = digitsOnly.startsWith('591') ? digitsOnly.slice(3) : digitsOnly;
+  if (!trimmedPhone || digitsOnly.length === 0 || (digitsOnly === '591')) {
+    errors.phone = 'Ingresa tu número de celular (ej. +591 71234567).';
+  } else if (
+    !PHONE_FORMAT_REGEX.test(trimmedPhone) ||
+    localDigits.length < 7 ||
+    digitsOnly.length < 8 ||
+    digitsOnly.length > 15
+  ) {
+    errors.phone = 'Ingresa un número de celular válido con código de país.';
   }
 
   if (!input.service) {
     errors.service = 'Selecciona el tipo de solución que necesitas.';
-  }
-
-  if (!input.budget) {
-    errors.budget = 'Selecciona un rango de inversión estimado.';
   }
 
   const trimmedMessage = input.message.trim();
@@ -139,4 +135,22 @@ export function validateContactForm(
     valid: Object.keys(errors).length === 0,
     errors,
   };
+}
+
+export function buildWhatsAppInquiryUrl(
+  waNumber: string,
+  input: ContactFormInput,
+  serviceTitle: string
+): string {
+  const cleanTarget = waNumber.replace(/\D/g, '');
+  const text = [
+    'Hola equipo de pytech, me gustaría consultar por un proyecto:',
+    '',
+    `*Nombre:* ${input.name.trim()}`,
+    `*Celular:* ${input.phone.trim()}`,
+    `*Tipo de proyecto:* ${serviceTitle}`,
+    `*Sobre el proyecto:* ${input.message.trim()}`,
+  ].join('\n');
+
+  return `https://wa.me/${cleanTarget}?text=${encodeURIComponent(text)}`;
 }

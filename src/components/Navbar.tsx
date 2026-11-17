@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { motion } from 'motion/react';
+import { EASE_OUT_EXPO } from './MotionPrimitives';
 
 interface NavbarProps {
   onScheduleClick: () => void;
@@ -25,34 +27,50 @@ export function Navbar({ onScheduleClick }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#FAFAFA]/90 backdrop-blur-md border-b border-zinc-200/80">
+    <motion.header
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+      className="sticky top-0 z-40 bg-[#FAFAFA]/90 backdrop-blur-md border-b border-zinc-200/80"
+    >
       <div className="max-w-6xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between gap-8">
         {/* Zone 1: Single text element wordmark */}
-        <a
+        <motion.a
           href="#inicio"
+          initial={{ opacity: 0, x: -8 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.05, ease: EASE_OUT_EXPO }}
           className="font-display text-xl font-bold tracking-tight text-zinc-950 whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded"
         >
           pytech
-        </a>
+        </motion.a>
 
         {/* Zone 2: 4 single-line nav links */}
         <nav
           aria-label="Navegación principal"
           className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-600"
         >
-          {NAV_LINKS.map((link) => (
-            <a
+          {NAV_LINKS.map((link, index) => (
+            <motion.a
               key={link.href}
               href={link.href}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.08 + index * 0.045, ease: EASE_OUT_EXPO }}
               className="hover:text-zinc-950 transition-colors duration-150 whitespace-nowrap shrink-0 py-1 border-b border-transparent hover:border-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded"
             >
               {link.label}
-            </a>
+            </motion.a>
           ))}
         </nav>
 
         {/* Zone 3: 1 primary action */}
-        <div className="flex items-center gap-3 shrink-0">
+        <motion.div
+          initial={{ opacity: 0, x: 8 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.22, ease: EASE_OUT_EXPO }}
+          className="flex items-center gap-3 shrink-0"
+        >
           <button
             type="button"
             onClick={handleCtaClick}
@@ -70,12 +88,17 @@ export function Navbar({ onScheduleClick }: NavbarProps) {
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-        </div>
+        </motion.div>
       </div>
 
       {/* Mobile navigation drawer */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-zinc-200 bg-[#FAFAFA] px-6 py-4 space-y-2">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2, ease: EASE_OUT_EXPO }}
+          className="md:hidden border-t border-zinc-200 bg-[#FAFAFA] px-6 py-4 space-y-2"
+        >
           <nav aria-label="Navegación móvil" className="flex flex-col space-y-1">
             {NAV_LINKS.map((link) => (
               <a
@@ -97,8 +120,8 @@ export function Navbar({ onScheduleClick }: NavbarProps) {
               Agendar consulta
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
-    </header>
+    </motion.header>
   );
 }
